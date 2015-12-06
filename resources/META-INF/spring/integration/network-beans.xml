@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <import resource="common-beans.xml"/>
+    
+    <bean id="netController" class="ut.distcomp.framework.NetController">
+        <constructor-arg ref="config" />
+    </bean>
+    
+    <bean id="sendLog" class="com.google.common.collect.HashBasedTable"
+        factory-method="create"/>
+    
+    <bean id="receiveLog" class="com.google.common.collect.HashBasedTable"
+        factory-method="create"/>
+
+    <bean id="alwaysFalsePredicate" 
+        class="edu.utexas.cs.distributedsystems.muse.util.AlwaysFalsePredicate"/>
+    
+    <bean id="sendExitConditions"
+        class="edu.utexas.cs.distributedsystems.muse.util.DisjunctionPredicate">
+        <constructor-arg ref="alwaysFalsePredicate" />
+    </bean>
+    
+    <bean id="receiveExitConditions"
+        class="edu.utexas.cs.distributedsystems.muse.util.DisjunctionPredicate">
+        <constructor-arg ref="alwaysFalsePredicate" />
+    </bean>
+    
+    <bean id="naturalDelay" class="java.lang.Long" factory-method="valueOf">
+        <constructor-arg>
+            <bean class="java.lang.System" factory-method="getProperty">
+                <constructor-arg value="naturalDelay"/>
+                <constructor-arg value="0"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="messageNetworkCommunicator" 
+        class="edu.utexas.cs.distributedsystems.muse.network.MessageNetworkCommunicator"
+        destroy-method="shutdown">
+        <constructor-arg ref="netController" />
+        <constructor-arg ref="gson" />
+        <constructor-arg ref="sendExitConditions" />
+        <constructor-arg ref="receiveExitConditions" />
+        <constructor-arg ref="naturalDelay" />
+    </bean>
+</beans>

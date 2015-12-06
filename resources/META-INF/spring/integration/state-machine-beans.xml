@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+    
+    <import resource="common-beans.xml"/>
+    <import resource="command-beans.xml" />
+    <import resource="network-beans.xml"/>
+    <import resource="dao-beans.xml"/>
+    
+    <bean id="coordinatingStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.CoordinatingStateExecution">
+        <constructor-arg ref="processNum" />
+        <constructor-arg ref="messageNetworkCommunicator" />
+        <constructor-arg ref="fileSystemDTLogDao" />
+        <constructor-arg ref="hybridFileMapPlaylistDao" />
+        <constructor-arg ref="voteQueue" />
+        <constructor-arg ref="timeout" />
+    </bean>
+    
+    <bean id="participatingStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.ParticipatingStateExecution">
+        <constructor-arg ref="processNum" />
+        <constructor-arg ref="messageNetworkCommunicator" />
+        <constructor-arg ref="fileSystemDTLogDao" />
+        <constructor-arg ref="hybridFileMapPlaylistDao" />
+        <constructor-arg ref="voteQueue" />
+        <constructor-arg ref="timeout" />
+    </bean>
+    
+    <bean id="coordinatorTerminatingStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.CoordinatorTerminatingStateExecution">
+        <constructor-arg ref="processNum" />
+        <constructor-arg ref="messageNetworkCommunicator" />
+        <constructor-arg ref="fileSystemDTLogDao" />
+        <constructor-arg ref="hybridFileMapPlaylistDao" />
+        <constructor-arg ref="timeout" />
+    </bean>
+    
+    <bean id="participantTerminatingStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.ParticipantTerminatingStateExecution">
+        <constructor-arg ref="processNum" />
+        <constructor-arg ref="messageNetworkCommunicator" />
+        <constructor-arg ref="fileSystemDTLogDao" />
+        <constructor-arg ref="hybridFileMapPlaylistDao" />
+        <constructor-arg ref="timeout" />
+    </bean>
+
+    <bean id="idlingStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.IdlingStateExecution">
+        <constructor-arg ref="playlistQueue" />
+        <constructor-arg ref="commandQueue" />
+        <constructor-arg ref="messageNetworkCommunicator" />
+        <constructor-arg ref="interactiveCommandExecutor" />
+        <constructor-arg ref="fileSystemDTLogDao" />
+        <constructor-arg ref="processNum" />
+    </bean>
+    
+    <bean id="wakingStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.WakingStateExecution">
+        <constructor-arg ref="fileSystemDTLogDao" />
+    </bean>
+    
+    <bean id="electingStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.ElectingStateExecution">
+        <constructor-arg ref="numProcesses" />
+        <constructor-arg ref="messageNetworkCommunicator" />
+        <constructor-arg ref="processNum" />
+        <constructor-arg ref="timeout" />
+    </bean>
+    
+    <bean id="recoveringStateExecution" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.RecoveringStateExecution">
+        <constructor-arg ref="processNum" />
+        <constructor-arg ref="messageNetworkCommunicator" />
+        <constructor-arg ref="fileSystemDTLogDao" />
+        <constructor-arg ref="hybridFileMapPlaylistDao" />
+        <constructor-arg ref="timeout" />
+    </bean>
+    
+    <bean id="stateMap" class="com.google.common.collect.ImmutableMap" factory-method="copyOf">
+        <constructor-arg>
+            <util:map>
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.WAKING" />
+                    </key>
+                    <ref bean="wakingStateExecution"/>
+                </entry>
+
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.IDLING" />
+                    </key>
+                    <ref bean="idlingStateExecution"/>
+                </entry>
+
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.COORDINATING" />
+                    </key>
+                    <ref bean="coordinatingStateExecution"/>
+                </entry>
+
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.PARTICIPATING" />
+                    </key>
+                    <ref bean="participatingStateExecution"/>
+                </entry>
+
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.COORDINATOR_TERMINATING" />
+                    </key>
+                    <ref bean="coordinatorTerminatingStateExecution"/>
+                </entry>
+
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.ELECTING" />
+                    </key>
+                    <ref bean="electingStateExecution"/>
+                </entry>
+                
+                <!-- END TODO: Replace the StateExecution values below. Just a placeholder for now. -->
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.PARTICIPANT_TERMINATING" />
+                    </key>
+                    <ref bean="participantTerminatingStateExecution"/>
+                </entry>
+                
+                <entry>
+                    <key>
+                        <util:constant 
+                        static-field="edu.utexas.cs.distributedsystems.muse.protocol.StateLabel.RECOVERING" />
+                    </key>
+                    <ref bean="recoveringStateExecution"/>
+                </entry>
+                <!-- END TODO: Replace the StateExecution values below. Just a placeholder for now. -->
+                
+            </util:map>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="threePhaseProtocolStateMachine" 
+        class="edu.utexas.cs.distributedsystems.muse.protocol.ThreePhaseProtocolStateMachine">
+        <constructor-arg ref="peerIds"/>
+        <constructor-arg ref="stateMap" />
+    </bean>
+</beans>

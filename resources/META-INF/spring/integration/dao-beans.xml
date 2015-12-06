@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <import resource="common-beans.xml" />
+    
+    <bean id="logFileName" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg value="user.logFileName" />
+        <constructor-arg value="#{processNum+'.dtlog'}" />
+    </bean>
+    
+    <bean id="playlistFileName" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg value="user.logFileName" />
+        <constructor-arg value="#{processNum+'.playlist'}" />
+    </bean>
+    
+    <bean id="logFile" class="java.io.File">
+        <constructor-arg ref="logFileName"/>
+    </bean>
+    
+    <bean id="playlistFile" class="java.io.File">
+        <constructor-arg ref="playlistFileName"/>
+    </bean>
+    
+    <bean id="fileBackedMap" class="edu.utexas.cs.distributedsystems.muse.storage.FileBackedMap"
+        factory-method="fromFile">
+        <constructor-arg ref="playlistFile" />
+    </bean>
+        
+    <bean id="hybridFileMapPlaylistDao"
+        class="edu.utexas.cs.distributedsystems.muse.storage.HashFileHybridPlaylistDataAccessObject">
+        <constructor-arg ref="fileBackedMap" />
+    </bean>
+    
+    <bean id="fileSystemDTLogDao" 
+        class="edu.utexas.cs.distributedsystems.muse.storage.FileSystemDTLogDataAccessObject">
+        <constructor-arg ref="logFileName"/>
+        <constructor-arg ref="gson" />
+    </bean>
+</beans>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <bean id="config" class="ut.distcomp.framework.Config">
+        <constructor-arg value="network.properties"/>
+    </bean>
+    
+    <bean id="timeout" class="java.lang.Long" factory-method="valueOf">
+        <constructor-arg>
+            <bean class="java.lang.System" factory-method="getProperty">
+                <constructor-arg value="timeout"/>
+                <constructor-arg value="10000"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+    
+    
+    <bean id="processNum" factory-bean="config" factory-method="getProcNum"/>
+    
+    <bean id="numProcesses" factory-bean="config" factory-method="getNumProcesses"/>
+    
+    <bean id="peerIds" factory-bean="config" factory-method="retrievePeerMap"/>
+    
+    <bean id="gson" class="com.google.gson.Gson"/>
+    
+    <bean id="voteQueue" class="java.util.concurrent.ConcurrentLinkedQueue"/>
+    
+    <bean id="commandQueue" class="java.util.concurrent.ConcurrentLinkedQueue"/>
+    
+    <bean id="playlistQueue" class="java.util.concurrent.ConcurrentLinkedQueue"/>
+</beans>
