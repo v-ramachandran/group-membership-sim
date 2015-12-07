@@ -15,7 +15,7 @@ public abstract class NetworkMessage {
     public abstract MessageType getMessageType();
 
     @AutoValue.Builder
-    protected static abstract class NetworkMessageBuilder {
+    public static abstract class NetworkMessageBuilder {
         public abstract NetworkMessageBuilder setSender(
             final MemberIdentification memberIdentification);
         public abstract NetworkMessageBuilder setRecipient(

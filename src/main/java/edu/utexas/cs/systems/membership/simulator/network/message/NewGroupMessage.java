@@ -17,7 +17,7 @@ public abstract class NewGroupMessage implements Serializable {
     public abstract long getTimestamp();
 
     @AutoValue.Builder
-    protected static abstract class NewGroupMessageBuilder {
+    public static abstract class NewGroupMessageBuilder {
         public abstract NewGroupMessageBuilder setTimestamp(final long timestamp);
         public abstract NewGroupMessage build();
     }

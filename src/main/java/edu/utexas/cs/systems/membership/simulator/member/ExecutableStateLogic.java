@@ -6,4 +6,6 @@ public interface ExecutableStateLogic {
      * 
      */
     public GroupMemberState execute(final GroupMemberState currentState);
+
+    public void shutdown();
 }

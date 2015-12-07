@@ -1,42 +1,58 @@
 package edu.utexas.cs.systems.membership.simulator.member;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
+
+import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 
 public class CircularOrderedMemberList implements OrderedMemberList {
 
     private TreeSet<MemberIdentification> memberIdSet;
-    private Map<Long, MemberIdentification> memberIdMap;
-
+    private Map<Integer, MemberIdentification> memberIdMap;
+    private Set<Integer> presenceSet;
+    
     protected CircularOrderedMemberList(final TreeSet<MemberIdentification> memberIdSet,
-        final Map<Long, MemberIdentification> memberIdMap) {
+        final Map<Integer, MemberIdentification> memberIdMap, final Set<Integer> presenceSet) {
 
         this.memberIdMap = memberIdMap;
         this.memberIdSet = memberIdSet;
+        this.presenceSet = presenceSet;
     }
 
-    public class Builder {
+    public static class Builder {
         private TreeSet<MemberIdentification> memberIdSet;
-        private Map<Long, MemberIdentification> memberIdMap;
+        private Map<Integer, MemberIdentification> memberIdMap;
 
         public Builder() {
             this.memberIdSet = new TreeSet<MemberIdentification>();
-            this.memberIdMap = new HashMap<Long, MemberIdentification>();
+            this.memberIdMap = new HashMap<Integer, MemberIdentification>();
         }
 
-        public void addMember(final MemberIdentification memberIdentification) {
+        public Builder addMembers(final Iterable<MemberIdentification> memberIds) {
+            for(MemberIdentification memberId : memberIds) {
+                addMember(memberId);
+            }
+            
+            return this;
+        }
+
+        public Builder addMember(final MemberIdentification memberIdentification) {
             memberIdSet.add(memberIdentification);
             memberIdMap.put(memberIdentification.getId(), memberIdentification);
+            return this;
         }
 
         public CircularOrderedMemberList build() {
-            return new CircularOrderedMemberList(memberIdSet, memberIdMap);
+            return new CircularOrderedMemberList(memberIdSet, memberIdMap, new HashSet<Integer>());
         }
     }
 
     @Override
-    public MemberIdentification getNextMember(final long memberId) {
+    public MemberIdentification getNextMember(final int memberId) {
 
         if (!memberIdMap.containsKey(memberId)) {
             return null;
@@ -54,7 +70,7 @@ public class CircularOrderedMemberList implements OrderedMemberList {
     }
 
     @Override
-    public MemberIdentification getPreviousMember(final long memberId) {
+    public MemberIdentification getPreviousMember(final int memberId) {
 
         if (!memberIdMap.containsKey(memberId)) {
             return null;
@@ -77,17 +93,33 @@ public class CircularOrderedMemberList implements OrderedMemberList {
     }
 
     @Override
-    public MemberIdentification getMember(long memberId) {
-        return null;
+    public MemberIdentification getMember(final int memberId) {
+        return memberIdMap.get(memberId);
     }
 
     @Override
-    public boolean isPresent(long memberId) {
-        return false;
+    public void markAsPresent(final int memberId) {
+        presenceSet.add(memberId);
     }
 
     @Override
-    public boolean markAsPresent(long memberId) {
-        return false;
+    public boolean hasAbsentMembers() {
+        // System.out.println(String.format("1 %s", new Gson().toJson(presenceSet)));
+        // System.out.println(String.format("w %s", new Gson().toJson(memberIdMap.keySet())));
+        return !Sets.difference(memberIdMap.keySet(), presenceSet).isEmpty();
+    }
+
+    @Override
+    public void removeAbsentMembers() {
+        final Set<Integer> absentMembers = Sets.difference(memberIdMap.keySet(), presenceSet);
+        for (Integer memberId : absentMembers) {
+            final MemberIdentification memberIdentification = memberIdMap.get(memberId);
+            memberIdSet.remove(memberIdentification);
+        }
+    }
+
+    @Override
+    public void resetAttendance() {
+        presenceSet.clear();
     }
 }

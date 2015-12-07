@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 public class ListCommand implements InteractiveCommand {
 
     public static final String COMMAND_NAME = "LIST";
-    public static final String HELP_MESSAGE = "LIST";
+    public static final String HELP_MESSAGE = "LIST - List all of the available commands.";
     public static final Pattern COMMAND_PATTERN = Pattern.compile("^LIST$");
 
     public Iterable<InteractiveCommand> commands;

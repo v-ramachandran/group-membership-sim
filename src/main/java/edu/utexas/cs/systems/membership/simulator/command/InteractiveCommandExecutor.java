@@ -30,6 +30,8 @@ public class InteractiveCommandExecutor {
                 + "for command entry: %s.", commandLineEntry);
             System.err.println(errorMessage);
         }
+
+        System.out.println("\n");
     }
     
     /**

@@ -2,7 +2,8 @@ package edu.utexas.cs.systems.membership.simulator.network.message;
 
 public enum MessageType {
 
-    NEW_GROUP(NewGroupMessage.class), PRESENT(PresentMessage.class), // Common Message Types
+    NEW_GROUP(AutoValue_NewGroupMessage.class), PRESENT(AutoValue_PresentMessage.class), // Common Message Types
+    MEMBER_DROPPED(AutoValue_MemberDroppedMessage.class), // Augmentation to Periodic Broadcast to handle Membership Checking
     LIST(ListMessage.class); // Attendance List Protocol required
 
     private Class<? extends Object> associatedClass;

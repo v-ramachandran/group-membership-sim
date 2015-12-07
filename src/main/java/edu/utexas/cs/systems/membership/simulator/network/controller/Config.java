@@ -17,14 +17,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  * This code has been modified from the version provided by Isaac Levy to:
  * 
  * 1. Be constructed from a {@link Properties} object.
  */
 public class Config {
-    
+
     private void initializeConfig(final Properties properties) throws IOException {
         numProcesses = loadInt(properties,"NumProcesses");
         addresses = new InetAddress[numProcesses];
@@ -43,6 +42,7 @@ public class Config {
             logger.info("procNum not loaded from file");
         }
     }
+
     /**
      * Loads config from a file.  Optionally puts in 'procNum' if in file.
      * See sample file for syntax

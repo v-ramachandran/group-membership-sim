@@ -58,6 +58,7 @@ public class NetController {
      * @return bool indicating success
      */
     public synchronized boolean sendMsg(int process, String msg) {
+        // System.out.println(String.format("%s %s",this.config.procNum, process));
         try {
             if (outSockets[process] == null)
                 initOutgoingConn(process);

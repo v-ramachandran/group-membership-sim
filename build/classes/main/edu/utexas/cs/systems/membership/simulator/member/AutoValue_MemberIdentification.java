@@ -6,12 +6,12 @@ import javax.annotation.Generated;
 @Generated("com.google.auto.value.processor.AutoValueProcessor")
 final class AutoValue_MemberIdentification extends MemberIdentification {
 
-  private final long id;
+  private final int id;
   private final String hostname;
   private final int port;
 
   private AutoValue_MemberIdentification(
-      long id,
+      int id,
       String hostname,
       int port) {
     this.id = id;
@@ -23,7 +23,7 @@ final class AutoValue_MemberIdentification extends MemberIdentification {
   }
 
   @Override
-  public long getId() {
+  public int getId() {
     return id;
   }
 
@@ -64,7 +64,7 @@ final class AutoValue_MemberIdentification extends MemberIdentification {
   public int hashCode() {
     int h = 1;
     h *= 1000003;
-    h ^= (id >>> 32) ^ id;
+    h ^= id;
     h *= 1000003;
     h ^= hostname.hashCode();
     h *= 1000003;
@@ -73,7 +73,7 @@ final class AutoValue_MemberIdentification extends MemberIdentification {
   }
 
   static final class Builder extends MemberIdentification.MemberIdentificationBuilder {
-    private Long id;
+    private Integer id;
     private String hostname;
     private Integer port;
     Builder() {
@@ -84,7 +84,7 @@ final class AutoValue_MemberIdentification extends MemberIdentification {
       this.port = source.getPort();
     }
     @Override
-    public MemberIdentification.MemberIdentificationBuilder setId(long id) {
+    public MemberIdentification.MemberIdentificationBuilder setId(int id) {
       this.id = id;
       return this;
     }
