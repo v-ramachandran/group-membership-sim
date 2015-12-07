@@ -10,12 +10,15 @@ import com.google.gson.GsonBuilder;
 import edu.utexas.cs.systems.membership.simulator.command.AbortAfterCommand;
 import edu.utexas.cs.systems.membership.simulator.command.InteractiveCommandExecutor;
 import edu.utexas.cs.systems.membership.simulator.command.InteractiveCommandExecutorBuilder;
+import edu.utexas.cs.systems.membership.simulator.command.InternalErrorException;
 import edu.utexas.cs.systems.membership.simulator.command.ListCommand;
+import edu.utexas.cs.systems.membership.simulator.command.PrintLogCommand;
 import edu.utexas.cs.systems.membership.simulator.command.ResetCommand;
 import edu.utexas.cs.systems.membership.simulator.command.SettingsCommand;
 import edu.utexas.cs.systems.membership.simulator.command.StartCommand;
 import edu.utexas.cs.systems.membership.simulator.command.UpdateDelaysCommand;
 import edu.utexas.cs.systems.membership.simulator.command.UpdateStrategyCommand;
+import edu.utexas.cs.systems.membership.simulator.logs.LogSet;
 import edu.utexas.cs.systems.membership.simulator.network.AutoValueTypeAdapterFactory;
 import edu.utexas.cs.systems.membership.simulator.network.PortValueGenerator;
 import edu.utexas.cs.systems.membership.simulator.network.SimplePortValueGenerator;
@@ -26,7 +29,7 @@ public class Master {
 
     
     /**
-     * TODO Leverage Guice or Spring to better create objects rather than sloppily creating them
+     * TODO Leverage Guice or Spring to better create objects rather than creating them
      * manually as below.
      */
 
@@ -39,7 +42,7 @@ public class Master {
     public static ProcessPool installProcessModule() {
         final Gson gson = installSerializationModule();
         final PortValueGenerator portValueGenerator = new SimplePortValueGenerator(7000);
-        final ProcessPoolFactory processPoolFactory = new ProcessPoolFactory(portValueGenerator, gson, 4);
+        final ProcessPoolFactory processPoolFactory = new ProcessPoolFactory(portValueGenerator, gson, 3);
 
         return new ProcessPool(processPoolFactory);
     }
@@ -47,12 +50,15 @@ public class Master {
 
     public static InteractiveCommandExecutor installCommandModule() throws Exception {
         final ProcessPool processPool = installProcessModule();
+        processPool.initialize();
+
         final ResetCommand resetCommand = new ResetCommand(processPool);
         final StartCommand startCommand = new StartCommand(processPool);
         final SettingsCommand settingsCommand = new SettingsCommand(processPool);
         final UpdateStrategyCommand updateCommand = new UpdateStrategyCommand(processPool);
         final UpdateDelaysCommand updateDelaysCommand = new UpdateDelaysCommand(processPool);
         final AbortAfterCommand abortAfterCommand = new AbortAfterCommand(processPool);
+        final PrintLogCommand printLogCommand = new PrintLogCommand(processPool);
         
         return new InteractiveCommandExecutorBuilder()
             .addCommand(settingsCommand)
@@ -61,6 +67,7 @@ public class Master {
             .addCommand(updateCommand)
             .addCommand(updateDelaysCommand)
             .addCommand(abortAfterCommand)
+            .addCommand(printLogCommand)
             .build();
     }
 
@@ -73,7 +80,7 @@ public class Master {
 
         final InteractiveCommandExecutor interactiveCommandExecutor = 
             installCommandModule();
-        System.err.println("-- Command Listener started -\n");
+        System.err.println("-- Command Listener started --\n");
         try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in)))
         {
             while (true) {

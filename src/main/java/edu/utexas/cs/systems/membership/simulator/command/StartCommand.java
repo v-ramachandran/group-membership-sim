@@ -46,11 +46,6 @@ public class StartCommand implements InteractiveCommand {
             if (processPool.hasActiveProcesses()) {
                 System.err.println("Unable to start processes that have already been started. Consider RESET first.");
             } else {
-                try {
-                    processPool.initialize();
-                } catch (Exception exception) {
-                    throw new InternalErrorException(exception);
-                }
                 final int numberTimesToRun = Integer.valueOf(match.group(START_GROUP));
                 processPool.startAllProcesses(numberTimesToRun);
             }

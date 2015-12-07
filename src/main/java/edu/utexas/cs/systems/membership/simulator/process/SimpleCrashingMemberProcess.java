@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.Table;
 
+import edu.utexas.cs.systems.membership.simulator.logs.LogSet;
 import edu.utexas.cs.systems.membership.simulator.member.GroupMemberState;
 import edu.utexas.cs.systems.membership.simulator.member.GroupMemberStrategyLabel;
 import edu.utexas.cs.systems.membership.simulator.member.MemberIdentification;
@@ -21,21 +22,24 @@ public class SimpleCrashingMemberProcess implements CrashingMemberProcess {
     private AbortingNetworkCommunicator networkCommunicator;
     private GroupMemberState groupMemberState;
     private Map<GroupMemberStrategyLabel, MembershipStrategy> membershipStrategyMap;
-
+    private LogSet logSet;
+    
     private volatile boolean alive;
     private int numberTimesToRun;
 
     public SimpleCrashingMemberProcess(final AbortingNetworkCommunicator networkCommunicator,
-        final GroupMemberState initialState, final Iterable<MemberIdentification> memberIds) {
+        final GroupMemberState initialState, final Iterable<MemberIdentification> memberIds,
+        final LogSet logSet) {
 
         this.networkCommunicator = networkCommunicator;
         this.groupMemberState = initialState;
         this.alive = false;
         this.numberTimesToRun = 0;
+        this.logSet = logSet;
 
         this.membershipStrategyMap = new HashMap<GroupMemberStrategyLabel, MembershipStrategy>();
         this.membershipStrategyMap.put(GroupMemberStrategyLabel.PERIODIC_BROADCAST, 
-            new PeriodicBroadcastGroupMemberStrategy(networkCommunicator, memberIds));
+            new PeriodicBroadcastGroupMemberStrategy(networkCommunicator, memberIds, logSet));
     }
 
     @Override

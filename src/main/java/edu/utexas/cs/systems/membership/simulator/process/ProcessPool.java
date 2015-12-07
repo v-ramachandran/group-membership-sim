@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import edu.utexas.cs.systems.membership.simulator.logs.LogSet;
 import edu.utexas.cs.systems.membership.simulator.member.GroupMemberState;
 import edu.utexas.cs.systems.membership.simulator.member.GroupMemberStrategyLabel;
 import edu.utexas.cs.systems.membership.simulator.member.MembershipConfiguration;
@@ -15,11 +16,13 @@ public class ProcessPool {
     private boolean hasActiveProcesses;
     private MembershipConfiguration membershipConfiguration;
     private GroupMemberStrategyLabel groupMemberStrategyLabel;
+    private LogSet logSet;
 
     public ProcessPool(final ProcessPoolFactory processPoolFactory) {
         this.processPoolFactory = processPoolFactory;
         this.memberPool = new HashMap<Integer, CrashingMemberProcess>();
         this.hasActiveProcesses = false;
+        this.logSet = new LogSet();
 
         this.membershipConfiguration = MembershipConfiguration.defaultConfiguration();
         this.groupMemberStrategyLabel = GroupMemberStrategyLabel.PERIODIC_BROADCAST;
@@ -35,7 +38,7 @@ public class ProcessPool {
             .setMembershipConfiguration(newConfiguration)
             .setPeriodsCompleted(0)
             .build();
-        memberPool = processPoolFactory.createMemberProcesses(groupMemberState);
+        memberPool = processPoolFactory.createMemberProcesses(groupMemberState, logSet);
     }
 
     public CrashingMemberProcess retrieveMemberProcess(final int memberId) {
@@ -43,12 +46,15 @@ public class ProcessPool {
     }
 
     public void cleanUp() {
+        logSet.clear();
+
         for (final Entry<Integer, CrashingMemberProcess> entry : memberPool.entrySet()) {
             final CrashingMemberProcess runnableProcess = entry.getValue();
             if (runnableProcess.isAlive()) {
                 runnableProcess.cleanUp();
             }
         }
+
         this.hasActiveProcesses = false;
     }
 
@@ -66,6 +72,7 @@ public class ProcessPool {
 
     public void reset() throws Exception {
         cleanUp();
+        initialize();
     }
 
     public void setStrategy(final GroupMemberStrategyLabel groupMemberStrategyLabel) {
@@ -82,5 +89,9 @@ public class ProcessPool {
 
     public void setMembershipConfiguration(final MembershipConfiguration membershipConfiguration) {
         this.membershipConfiguration = membershipConfiguration;
+    }
+
+    public LogSet getLogSet() {
+        return logSet;
     }
 }

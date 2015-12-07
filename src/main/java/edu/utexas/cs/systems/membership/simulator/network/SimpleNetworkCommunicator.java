@@ -8,6 +8,8 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.gson.Gson;
 
+import edu.utexas.cs.systems.membership.simulator.logs.LogItem;
+import edu.utexas.cs.systems.membership.simulator.logs.LogSet;
 import edu.utexas.cs.systems.membership.simulator.member.MemberIdentification;
 import edu.utexas.cs.systems.membership.simulator.network.controller.NetController;
 import edu.utexas.cs.systems.membership.simulator.network.message.MessageType;
@@ -52,7 +54,7 @@ public class SimpleNetworkCommunicator implements AbortingNetworkCommunicator {
     
     private <Message> void createAndSendNetworkMessage(final Message message,
         final MemberIdentification destination) {
-        
+
         final MessageType messageType = 
             MessageType.retrieveMatchingType(message.getClass());
         final String messagePayload = gson.toJson(message);
@@ -63,14 +65,14 @@ public class SimpleNetworkCommunicator implements AbortingNetworkCommunicator {
             .setSender(selfIdentity)
             .build();
 
-        incrementValueInTable(sendLog, destination.getId(), messageType);
-
+        incrementValueInTable(sendLog, selfIdentity.getId(), messageType);
+        
         final String payload = gson.toJson(networkMessage);
         final int destinationId = destination.getId();
         netController.sendMsg(destinationId, payload);
 
         if (sendAbortPolicy.isSatisfied(sendLog)) {
-            throw new ScriptedNetworkCrashException();
+            throw new ScriptedNetworkCrashException(destination.getId());
         }
     }
     

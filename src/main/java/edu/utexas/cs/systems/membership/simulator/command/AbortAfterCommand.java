@@ -61,7 +61,7 @@ public class AbortAfterCommand implements InteractiveCommand {
                 final Integer count = Integer.valueOf(match.group(COUNT_GROUP));
                 
                 final String countString = String.format(
-                    "- Added simulation to abort:\n -- After receiving [%s] messages", count);
+                    "- Added simulation to abort:\n -- After sending [%s] messages", count);
                 System.out.println(countString);
                 final String memberIdString = String.format(
                     "--- Where messages are from [%s]", memberId);

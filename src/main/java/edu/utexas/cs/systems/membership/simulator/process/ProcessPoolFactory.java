@@ -6,6 +6,7 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 
+import edu.utexas.cs.systems.membership.simulator.logs.LogSet;
 import edu.utexas.cs.systems.membership.simulator.member.GroupMemberState;
 import edu.utexas.cs.systems.membership.simulator.member.MemberIdentification;
 import edu.utexas.cs.systems.membership.simulator.network.AbortingNetworkCommunicator;
@@ -28,8 +29,8 @@ public class ProcessPoolFactory {
         this.networkIdentityManager = new NetworkIdentityManager(portValueGenerator, numberMembers);
     }
 
-    public Map<Integer, CrashingMemberProcess> createMemberProcesses(GroupMemberState groupMemberState) 
-        throws Exception {
+    public Map<Integer, CrashingMemberProcess> createMemberProcesses(GroupMemberState groupMemberState,
+        final LogSet logSet) throws Exception {
 
         final Map<Integer, CrashingMemberProcess> memberPool = 
             new HashMap<Integer, CrashingMemberProcess>();
@@ -42,7 +43,7 @@ public class ProcessPoolFactory {
             final AbortingNetworkCommunicator networkCommunicator = 
                 new SimpleNetworkCommunicator(netController, memberIdentification, memberIds, gson);
             final CrashingMemberProcess memberProcess = 
-                new SimpleCrashingMemberProcess(networkCommunicator, groupMemberState, memberIds);
+                new SimpleCrashingMemberProcess(networkCommunicator, groupMemberState, memberIds, logSet);
             memberPool.put(memberIdentification.getId(), memberProcess);
         }
         

@@ -22,7 +22,7 @@ public class SelectionSizePredicate implements
     @Override
     public boolean isSatisfied(final Table<Integer, MessageType, Integer> table) {
         if (table.contains(expectedTarget, messageType)) {
-            return (table.get(expectedTarget, messageType) > expectedSelectionSize); 
+            return (table.get(expectedTarget, messageType) >= expectedSelectionSize); 
         } else {
             return false;
         }

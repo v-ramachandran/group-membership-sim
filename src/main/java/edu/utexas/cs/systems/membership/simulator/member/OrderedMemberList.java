@@ -16,7 +16,7 @@ public interface OrderedMemberList {
 
     public boolean hasAbsentMembers();
 
-    public void removeAbsentMembers();
+    public Iterable<Integer> removeAbsentMembers();
 
     public void resetAttendance();
 }

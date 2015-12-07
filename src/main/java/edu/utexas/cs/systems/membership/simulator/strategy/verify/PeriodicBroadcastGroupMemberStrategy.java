@@ -9,6 +9,8 @@ import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.Gson;
 
+import edu.utexas.cs.systems.membership.simulator.logs.LogItem;
+import edu.utexas.cs.systems.membership.simulator.logs.LogSet;
 import edu.utexas.cs.systems.membership.simulator.member.CircularOrderedMemberList;
 import edu.utexas.cs.systems.membership.simulator.member.GroupMemberState;
 import edu.utexas.cs.systems.membership.simulator.member.MemberIdentification;
@@ -27,10 +29,13 @@ public class PeriodicBroadcastGroupMemberStrategy implements MembershipStrategy 
     private ScheduledFuture<?> broadcastFuture;
     private ScheduledFuture<?> membershipCheckFuture;
     private ListeningScheduledExecutorService scheduledExecutorService;
+    private PeriodicPresentBroadcast periodicPresentBroadcast;
+    private LogSet logSet;
 
     public PeriodicBroadcastGroupMemberStrategy(final AbortingNetworkCommunicator networkCommunicator,
-        final Iterable<MemberIdentification> memberIds) {
-        
+        final Iterable<MemberIdentification> memberIds, final LogSet logSet) {
+
+        this.logSet = logSet;
         this.networkCommunicator = networkCommunicator;
         this.orderedMemberList = new CircularOrderedMemberList.Builder()
             .addMembers(memberIds)
@@ -40,6 +45,7 @@ public class PeriodicBroadcastGroupMemberStrategy implements MembershipStrategy 
         this.membershipCheckFuture = null;
         this.scheduledExecutorService = 
             MoreExecutors.listeningDecorator(Executors.newScheduledThreadPool(4));
+        this.periodicPresentBroadcast = null;
     }
 
     @Override
@@ -75,8 +81,25 @@ public class PeriodicBroadcastGroupMemberStrategy implements MembershipStrategy 
         final int periodsCompleted = currentState.getPeriodsCompleted();
         final long nextGroupId = currentState.getGroupMembershipId() + 
             (periodsCompleted*currentState.getMembershipConfiguration().getPeriodLengthMillis());
-        orderedMemberList.removeAbsentMembers();
+        final Iterable<Integer> memberIds = orderedMemberList.removeAbsentMembers();
+        LogItem missingMembersLog = LogItem.builder()
+            .setGroupId(currentState.getGroupMembershipId())
+            .setPeriod(currentState.getPeriodsCompleted())
+            .setProcessId(envelope.getRecipient().getId())
+            .setEventTimestamp(System.currentTimeMillis())
+            .didNotReceive(MessageType.PRESENT, memberIds)
+            .build();
+        logSet.addLogItem(missingMembersLog);
         orderedMemberList.resetAttendance();
+        periodicPresentBroadcast.updateGroupId(nextGroupId);
+        LogItem newGroupLog = LogItem.builder()
+            .setGroupId(nextGroupId)
+            .setPeriod(currentState.getPeriodsCompleted())
+            .setProcessId(envelope.getRecipient().getId())
+            .setEventTimestamp(System.currentTimeMillis())
+            .formedANewGroup(nextGroupId, orderedMemberList.getAllMembers())
+            .build();
+            logSet.addLogItem(newGroupLog);
         return GroupMemberState.builder(currentState)
             .setGroupMembershipId(nextGroupId)
             .build();
@@ -107,6 +130,14 @@ public class PeriodicBroadcastGroupMemberStrategy implements MembershipStrategy 
             (groupMemberState.getPeriodsCompleted() * 
                 groupMemberState.getMembershipConfiguration().getPeriodLengthMillis());
         if(!orderedMemberList.hasAbsentMembers() && periodCompletedAppliedToTime <= System.currentTimeMillis()) {
+            LogItem allPresentLog = LogItem.builder()
+                .setGroupId(groupMemberState.getGroupMembershipId())
+                .setPeriod(groupMemberState.getPeriodsCompleted())
+                .setProcessId(envelope.getRecipient().getId())
+                .setEventTimestamp(System.currentTimeMillis())
+                .didReceive(MessageType.PRESENT, orderedMemberList.getAllMembers())
+                .build();
+            logSet.addLogItem(allPresentLog);
             return GroupMemberState.builder(groupMemberState)
                 .setPeriodsCompleted(groupMemberState.getPeriodsCompleted() + 1)
                 .build();
@@ -127,8 +158,7 @@ public class PeriodicBroadcastGroupMemberStrategy implements MembershipStrategy 
         networkCommunicator.broadcastMessage(presentMessage);
 
         // schedule periodic broadcast of presence
-        final PeriodicPresentBroadcast periodicPresentBroadcast = 
-            new PeriodicPresentBroadcast(networkCommunicator);
+        periodicPresentBroadcast = new PeriodicPresentBroadcast(networkCommunicator, logSet, groupId);
         final long period = groupMemberState.getMembershipConfiguration().getPeriodLengthMillis();
         final long schedulingDelay = 
             groupMemberState.getMembershipConfiguration().getSchedulingDelayMillis();
@@ -140,7 +170,7 @@ public class PeriodicBroadcastGroupMemberStrategy implements MembershipStrategy 
         final long broadcastDelay = 
             groupMemberState.getMembershipConfiguration().getBroadcastLatencyMillis();
         final PeriodicBroadcastMembershipCheck periodicBroadcastMembershipCheck = 
-            new PeriodicBroadcastMembershipCheck(networkCommunicator, orderedMemberList);
+            new PeriodicBroadcastMembershipCheck(networkCommunicator, orderedMemberList, logSet);
         membershipCheckFuture = scheduledExecutorService.scheduleAtFixedRate(
             periodicBroadcastMembershipCheck, initialDelay + broadcastDelay, period, TimeUnit.MILLISECONDS); 
         return GroupMemberState.builder(groupMemberState) 

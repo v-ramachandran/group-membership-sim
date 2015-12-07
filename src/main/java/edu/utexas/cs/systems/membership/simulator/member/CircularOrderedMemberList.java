@@ -104,18 +104,17 @@ public class CircularOrderedMemberList implements OrderedMemberList {
 
     @Override
     public boolean hasAbsentMembers() {
-        // System.out.println(String.format("1 %s", new Gson().toJson(presenceSet)));
-        // System.out.println(String.format("w %s", new Gson().toJson(memberIdMap.keySet())));
         return !Sets.difference(memberIdMap.keySet(), presenceSet).isEmpty();
     }
 
     @Override
-    public void removeAbsentMembers() {
-        final Set<Integer> absentMembers = Sets.difference(memberIdMap.keySet(), presenceSet);
+    public Iterable<Integer> removeAbsentMembers() {
+        final Iterable<Integer> absentMembers = Sets.difference(memberIdMap.keySet(), presenceSet);
         for (Integer memberId : absentMembers) {
             final MemberIdentification memberIdentification = memberIdMap.get(memberId);
             memberIdSet.remove(memberIdentification);
         }
+        return absentMembers;
     }
 
     @Override
